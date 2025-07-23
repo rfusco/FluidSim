@@ -1,45 +1,70 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "renderer/renderer.hpp"
+#include <vector>
 #include <iostream>
 
-#include "imgui.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
+int windowWidth = 800;
+int windowHeight = 600;
 
-//My things
-#include "renderer/renderer.h"
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    windowWidth = width;
+    windowHeight = height;
+    glViewport(0, 0, width, height);
+    Renderer::UpdateProjection(width, height);
+}
 
 int main() {
-    // Init GLFW
     glfwInit();
-    GLFWwindow* window = glfwCreateWindow(800, 600, "FluidSim", NULL, NULL);
-    //Ensire window creation was successful
-    if (!window)
-    {
-        std::cout << "Failed to create GLFW window" << std::endl;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Instanced Circles", NULL, NULL);
+    if (!window) {
+        std::cerr << "Failed to create GLFW window\n";
         glfwTerminate();
         return -1;
     }
+
     glfwMakeContextCurrent(window);
-    
-    // Init GLAD loader
-    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD\n";
         return -1;
     }
 
-    // Resize window when window is resized
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Render loop
+    Renderer::Init();
+    Renderer::UpdateProjection(windowWidth, windowHeight);
+
+    std::vector<glm::vec2> positions;
+    std::vector<float> radii;
+
+    for (int i = -10; i <= 10; ++i) {
+        for (int j = -5; j <= 5; ++j) {
+            positions.emplace_back(i * 0.1f, j * 0.1f);
+            radii.push_back(0.01f);
+        }
+    }
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     while (!glfwWindowShouldClose(window)) {
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        Renderer::RenderFrame(positions, radii);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // Cleanup
-    glfwDestroyWindow(window);
+    Renderer::Cleanup();
     glfwTerminate();
     return 0;
 }
