@@ -21,6 +21,7 @@ file(GLOB_RECURSE SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/glad.c
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sim/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/init/*.cpp
 )
 
 # Define the executable
@@ -34,6 +35,7 @@ target_include_directories(fluidSim PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/renderer
     ${CMAKE_CURRENT_SOURCE_DIR}/sim
+    ${CMAKE_CURRENT_SOURCE_DIR}/init
     ${CMAKE_CURRENT_SOURCE_DIR}/../external/glad/include
     ${CMAKE_CURRENT_SOURCE_DIR}/../external/glm
     ${GLFW3_INCLUDE_DIR}
