@@ -9,7 +9,7 @@ struct Particle{
 };
 
 void initSPH(std::vector<Particle>& particles, int numParticles, float radius);
-void integrate(void);
+void integrate(std::vector<Particle>& particles, float timeStep);
 /*
 For every particle, loop through all other particles and sum their density contributions.
 */

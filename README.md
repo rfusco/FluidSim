@@ -28,7 +28,7 @@ Since the density at each point is known, the pressure can then be solved for us
 
 
 #### Calculating Forces
-We want to find the total force for every particle. We do so by summing the force due to pressure, viscosity, and gravity. \
+We want to find the total force for every particle. We do so by summing the forces due to pressure, viscosity, and gravity. \
 ![alt text](image-3.png) \
 Once again we loop through all particles **i**, and for each **i**, we loop through all other particles **j** and sum their pressure, viscosity force contributions.
 ##### Pressure
@@ -39,4 +39,18 @@ But we are dealing with a bunch of particles, not a continuous field, so we must
 But this force is not symmetric, which will lead to an unstable fluid. The symmetrical form of the force on particle **i** due to particle **j** is: \
 ![alt text](image-6.png) \
 **W** is now a gradient of the Spiky smoothing kernel, where **h** is the same as earlier.\
-![alt text](spiky.png)
+![alt text](image-7.png)
+
+##### Viscosity
+Viscosity is a fluid's resistance to flow. Imagine identical two streams of water inside a box clashing against each other. We know momentum is always conserved in a collision, so the fluid must eventually come to rest because the net momentum is zero before the collision (assuming identical water streams). In a continuous fluid this is represented as the laplacian of the velocity field, which is basically how much the gradient changes around a point (kinda like local extrema). The force also depends on **η**, the dynamic viscosity coefficient. This interaction is known as momentum diffusion. \
+![alt text](image-8.png) \
+Of course this must be discretized and stablized \
+![alt text](image-9.png) \
+Note the influence of the neighbors mass and density must be accounted for, as well as the velocity difference. Another smoothing kernel **W** is used, but now the laplacian is applied to it instead of the velocity due to the discretization. This will dictate how the velocity is to "smooth out" over space. \
+![alt text](image-10.png)
+
+##### Gravity
+Remember to divide the force of gravity **mg** by the density of the object.
+
+#### Integration
+We will use the simplest numerical integration approach, the Euler Method, and apply it to Newton's Second Law and kinematics equations for acceleration, velocity, and position.

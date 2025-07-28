@@ -13,8 +13,9 @@ std::vector<Particle> particles;
 // Constants
 float H = 16.0f; // Kernel smoothing radius
 float H2 = H * H; // Squared smoothing radius
-const static float REST_DENSity = 300.f;  // rest density
-const static float GAS_CONSTANT = 2000.f; // const for equation of state
+float REST_DENSity = 300.f;  // rest density
+float GAS_CONSTANT = 2000.f; // const for equation of state
+float timeStep = 0.0007f; // time step for simulation
 
 // get kernel function values ahead of time to avoid recomputing
 const static float POLY6 = poly6(H);

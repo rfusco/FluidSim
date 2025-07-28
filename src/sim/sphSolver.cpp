@@ -67,11 +67,21 @@ void computeForces(std::vector<Particle>& particles, float H, float G, float MAS
 
             if (r < H) {
                 // Pressure force
-                pForce += MASS * (pi.p + pj.p) / (2.0f * pj.rho) * SPIKY_GRADIENT * pow(H - r, 3) * glm::normalize(rij);
+                glm::vec2 normalizedRij = rij / r; // Normalize the vector
+                pForce += MASS * (pi.p + pj.p) / (2.0f * pj.rho) * static_cast<float>(SPIKY_GRADIENT * pow(H - r, 3)) * -normalizedRij;
 
                 // Viscosity force
-                vForce += VISCOSITY_LAPLACIAN * (pj.velocity - pi.velocity) / pj.rho;
+                vForce += VISCOSITY * pj.m / pj.rho * (pj.velocity - pi.velocity) * static_cast<float>(VISCOSITY_LAPLACIAN * (H - r));
             }
         }
+        // Gravity force
+        glm::vec2 gForce = glm::vec2(0.0f, G * MASS / pi.rho);
+
+        // Combine forces
+        pi.force = pForce + vForce + gForce;
     }
+}
+
+void integrate(std::vector<Particle>& particles, float timeStep){
+    
 }
