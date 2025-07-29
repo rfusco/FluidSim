@@ -53,4 +53,7 @@ Note the influence of the neighbors mass and density must be accounted for, as w
 Remember to divide the force of gravity **mg** by the density of the object.
 
 #### Integration
-We will use the simplest numerical integration approach, the Euler Method, and apply it to Newton's Second Law and kinematics equations for acceleration, velocity, and position.
+We will use the simplest numerical integration approach, the Euler Method, and apply it to Newton's Second Law and kinematics equations for acceleration, velocity, and position.\
+![alt text](image-11.png)\
+![alt text](image-12.png)\
+![alt text](image-13.png)
