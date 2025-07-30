@@ -14,18 +14,18 @@ int windowHeight = 600;
 std::vector<Particle> particles;
 
 // Constants
-float H = 16.0f; // Kernel smoothing radius
+float H = 16; // Kernel smoothing radius
 float H2 = H * H; // Squared smoothing radius
 float REST_DENSITY = 300.f;  // rest density
 float GAS_CONSTANT = 2000.f; // const for equation of state
 
 // Sim parameters
-float EPSILON = H / 10000000;
+float EPSILON = H / 100000000;
 float BOUND_DAMPING = 0.5f; // damping factor for boundary collisions
 
 // Make fps independent from simulation speed
-float simFPS = 60.0f; // target FPS for simulation
-float simDeltaTime = 1.0f / 60.0f; // fixed timestep for simulation
+float simFPS = 60; // target FPS for simulation
+float simDeltaTime = 1 / simFPS; // fixed timestep for simulation
 double lastTime = 0.0;
 double accumulatedTime = 0.0;
 
@@ -95,7 +95,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialize SPH particles
-    initSPH(particles, 10, 0.03f);
+    initSPH(particles, 10, H / 400.0f);
 
     lastTime = glfwGetTime();
 
@@ -108,7 +108,7 @@ int main() {
         // Simulation update with fixed timestep
         while (accumulatedTime >= simDeltaTime) {
             computeDensityAndPressure(particles, H, H2, POLY6, GAS_CONSTANT, REST_DENSITY);
-            computeForces(particles, H, -9.81f, 2.5f, SPIKY_GRADIENT, 0.1f, VISCOSITY_LAPLACIAN);
+            computeForces(particles, H, -9.81f, 2.5f, SPIKY_GRADIENT, 200, VISCOSITY_LAPLACIAN);
             integrate(particles, simDeltaTime, EPSILON, BOUND_DAMPING, windowWidth, windowHeight);
 
             accumulatedTime -= simDeltaTime;
