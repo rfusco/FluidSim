@@ -57,3 +57,9 @@ We will use the simplest numerical integration approach, the Euler Method, and a
 ![alt text](image-11.png)\
 ![alt text](image-12.png)\
 ![alt text](image-13.png)
+
+### Sources
+Müller, M., Charypar, D., & Gross, M. (2003). Particle‑based fluid simulation for interactive applications. \
+https://matthias-research.github.io/pages/publications/sca03.pdf \
+\
+Schuermann, Lucas V. (May 2016). Particle-Based Fluid Simulation with SPH. Writing. https://lucasschuermann.com/writing/particle-based-fluid-simulation
