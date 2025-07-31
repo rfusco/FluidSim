@@ -1,6 +1,6 @@
 #include <sphSolver.hpp>
 
-void initSPH(std::vector<Particle>& particles, int numParticles, float radius){
+void initSPH(std::vector<Particle>& particles, int numParticles, float radius, float windowWidth, float windowHeight) {
     particles.clear();
 
     const float jitter = 0.0005f;
@@ -15,8 +15,8 @@ void initSPH(std::vector<Particle>& particles, int numParticles, float radius){
     float gridHeight = (numY - 1) * spacing;
 
     // Compute offset to center the grid at (0,0)
-    float xOffset = -gridWidth / 2.0f;
-    float yOffset = -gridHeight / 2.0f;
+    float xOffset = windowWidth / 2.0f;
+    float yOffset = windowHeight / 2.0f;
 
     int count = 0;
     for (int y = 0; y < numY && count < numParticles; ++y) {
@@ -90,28 +90,28 @@ void integrate(std::vector<Particle>& particles, float timeStep, float EPSILON, 
 
         // Enforce boundary conditions
         // Left
-        if (p.position.x - p.rad - EPSILON < -1)
+        if (p.position.x - p.rad - EPSILON < 0)
         {
             p.velocity.x *= -BOUND_DAMPING;
-            p.position.x = EPSILON - 1 + p.rad;
+            p.position.x = EPSILON + p.rad;
         }
         // Right
-        if (p.position.x + p.rad + EPSILON > 1)
+        if (p.position.x + p.rad + EPSILON > windowWidth)
         {
             p.velocity.x *= -BOUND_DAMPING;
-            p.position.x = 1 - EPSILON - p.rad;
+            p.position.x = windowWidth - EPSILON - p.rad;
         }
         // Bottom
-        if (p.position.y - p.rad - EPSILON < -1)
+        if (p.position.y - p.rad - EPSILON < 0)
         {
             p.velocity.y *= -BOUND_DAMPING;
-            p.position.y = EPSILON - 1 + p.rad;
+            p.position.y = EPSILON + p.rad;
         }
         // Top
-        if (p.position.y + p.rad + EPSILON > 1)
+        if (p.position.y + p.rad + EPSILON > windowHeight)
         {
             p.velocity.y *= -BOUND_DAMPING;
-            p.position.y = 1 - EPSILON - p.rad;
+            p.position.y = windowHeight - EPSILON - p.rad;
         }
     }
 }

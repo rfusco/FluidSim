@@ -9,8 +9,8 @@
 #include <vector>
 #include <iostream>
 
-int windowWidth = 800;
-int windowHeight = 600;
+int windowWidth = 1000;
+int windowHeight = 800;
 std::vector<Particle> particles;
 
 // Constants
@@ -25,7 +25,7 @@ float BOUND_DAMPING = 0.5f; // damping factor for boundary collisions
 
 // Make fps independent from simulation speed
 float simFPS = 60; // target FPS for simulation
-float simDeltaTime = 1 / simFPS; // fixed timestep for simulation
+float simDeltaTime = 0.0007; // fixed timestep for simulation
 double lastTime = 0.0;
 double accumulatedTime = 0.0;
 
@@ -95,7 +95,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialize SPH particles
-    initSPH(particles, 10, H / 400.0f);
+    initSPH(particles, 700, H/2, windowWidth, windowHeight);
 
     lastTime = glfwGetTime();
 
@@ -106,7 +106,7 @@ int main() {
         accumulatedTime += deltaTime;
 
         // Simulation update with fixed timestep
-        while (accumulatedTime >= simDeltaTime) {
+        //while (accumulatedTime >= simDeltaTime) {
             computeDensityAndPressure(particles, H, H2, POLY6, GAS_CONSTANT, REST_DENSITY);
             computeForces(particles, H, -9.81f, 2.5f, SPIKY_GRADIENT, 200, VISCOSITY_LAPLACIAN);
             integrate(particles, simDeltaTime, EPSILON, BOUND_DAMPING, windowWidth, windowHeight);
@@ -114,7 +114,7 @@ int main() {
             accumulatedTime -= simDeltaTime;
 
             simStepsThisSecond++; // count simulation step
-        }
+        //}
 
         // Update simulation FPS once per second
         simFPSTimer += deltaTime;

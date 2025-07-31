@@ -71,8 +71,12 @@ void Renderer::Init() {
 }
 
 void Renderer::UpdateProjection(int width, int height) {
-    float aspect = static_cast<float>(width) / static_cast<float>(height);
-    projection = glm::ortho(-aspect, aspect, -1.0f, 1.0f);
+    // Map 0..width and 0..height directly to NDC
+    projection = glm::ortho(
+        0.0f, static_cast<float>(width),
+        0.0f, static_cast<float>(height),
+        -1.0f, 1.0f
+    );
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(uProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 }
