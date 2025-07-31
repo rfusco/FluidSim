@@ -26,7 +26,7 @@ float BOUND_DAMPING = 0.5f; // damping factor for boundary collisions
 float simTime = 0.0007;
 
 // Make fps independent from simulation speed
-bool useSimFPS = false; // use simulation FPS
+bool useSimFPS = false;
 float simFPS = 60; // target FPS for simulation
 float simDeltaTime = useSimFPS ? 1/simFPS : 0; // fixed timestep for simulation
 double lastTime = 0.0;
