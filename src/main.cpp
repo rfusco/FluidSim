@@ -1,16 +1,20 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "imgui.h"
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_opengl3.h"
-#include "renderer/renderer.hpp"
-#include "sphSolver.hpp"
-#include "kernel.hpp"
 #include <vector>
 #include <iostream>
 
-int windowWidth = 1000;
-int windowHeight = 800;
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
+#include "renderer/renderer.hpp"
+#include "sphSolver.hpp"
+#include "kernel.hpp"
+#include "init/initGL.hpp"
+
+extern int windowWidth;
+extern int windowHeight;
+
 std::vector<Particle> particles;
 
 // Constants
@@ -28,7 +32,7 @@ float simTime = 0.0007;
 // Make fps independent from simulation speed
 bool useSimFPS = false;
 float simFPS = 60; // target FPS for simulation
-float simDeltaTime = 1/simFPS; // fixed timestep for simulation
+float simDeltaTime = 1 / simFPS; // fixed timestep for simulation
 double lastTime = 0.0;
 double accumulatedTime = 0.0;
 
@@ -42,50 +46,12 @@ const static float POLY6 = poly6(H);
 const static float SPIKY_GRADIENT = spikyGradient(H);
 const static float VISCOSITY_LAPLACIAN = viscosityLaplacian(H);
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    windowWidth = width;
-    windowHeight = height;
-    glViewport(0, 0, width, height);
-    Renderer::UpdateProjection(width, height);
-}
-
-// Initialize OpenGL and create a window
-GLFWwindow* InitGL(void){
-    if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW\n";
-        return nullptr;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Instanced Circles", NULL, NULL);
-    if (!window) {
-        std::cerr << "Failed to create GLFW window\n";
-        glfwTerminate();
-        return nullptr;
-    }
-
-    glfwMakeContextCurrent(window);
-    glfwSwapInterval(0); // Enable VSync
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD\n";
-        return nullptr;
-    }
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    return window;
-}
-
 int main() {
+    // Initialize and create window
     GLFWwindow* window = InitGL();
     if (!window) return -1;
 
+    // Initialize renderer
     Renderer::Init();
     Renderer::UpdateProjection(windowWidth, windowHeight);
 
@@ -98,7 +64,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialize SPH particles
-    initSPH(particles, 550, H/2, windowWidth, windowHeight);
+    initSPH(particles, 650, H/2, windowWidth, windowHeight);
 
     lastTime = glfwGetTime();
 
@@ -154,10 +120,13 @@ int main() {
         ImGui::NewFrame();
 
         // Performance window
-        ImGui::Begin("Performance");
+        ImGui::Begin("Performance & Controls");
         ImGui::Text("Program FPS: %f", io.Framerate);
         ImGui::Text("Simulation FPS: %.1f", simFPSDisplay);
         ImGui::Text("Particles: %zu", particles.size());
+
+        //if(ImGui::Button)
+
         ImGui::End();
 
         // Render ImGui

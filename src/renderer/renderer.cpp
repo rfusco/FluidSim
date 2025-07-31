@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iostream>
 
-namespace {
+namespace Renderer{
     GLuint shaderProgram;
     GLuint vao, vbo, instanceVBO, radiusVBO;
     GLuint uProjectionLoc;
@@ -71,7 +71,6 @@ void Renderer::Init() {
 }
 
 void Renderer::UpdateProjection(int width, int height) {
-    // Map 0..width and 0..height directly to NDC
     projection = glm::ortho(
         0.0f, static_cast<float>(width),
         0.0f, static_cast<float>(height),

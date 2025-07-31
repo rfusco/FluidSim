@@ -21,7 +21,7 @@ void initSPH(std::vector<Particle>& particles, int numParticles, float radius, f
     int count = 0;
     for (int y = 0; y < numY && count < numParticles; ++y) {
         for (int x = 0; x < numX && count < numParticles; ++x) {
-            float jitter = rand() % 100 / 90.0f; // Random jitter for particle position
+            float jitter = rand() % 100 / 10.0f; // Random jitter for particle position
             float jitterX = ((rand() / (float)RAND_MAX) - 0.5f) * jitter;
             float jitterY = ((rand() / (float)RAND_MAX) - 0.5f) * jitter;
 
