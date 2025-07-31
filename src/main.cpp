@@ -28,7 +28,7 @@ float simTime = 0.0007;
 // Make fps independent from simulation speed
 bool useSimFPS = false;
 float simFPS = 60; // target FPS for simulation
-float simDeltaTime = useSimFPS ? 1/simFPS : 0; // fixed timestep for simulation
+float simDeltaTime = 1/simFPS; // fixed timestep for simulation
 double lastTime = 0.0;
 double accumulatedTime = 0.0;
 
@@ -98,7 +98,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialize SPH particles
-    initSPH(particles, 550, H/2, windowWidth, windowHeight);
+    initSPH(particles, 600, H/2, windowWidth, windowHeight);
 
     lastTime = glfwGetTime();
 
@@ -108,24 +108,31 @@ int main() {
         lastTime = currentTime;
         accumulatedTime += deltaTime;
 
-        // Simulation update with fixed timestep
-        while (accumulatedTime >= simDeltaTime) {
+        if(useSimFPS){
+            // Simulation update with fixed timestep
+            while (accumulatedTime >= simDeltaTime) {
+                computeDensityAndPressure(particles, H, H2, POLY6, GAS_CONSTANT, REST_DENSITY);
+                computeForces(particles, H, -9.81f, 2.5f, SPIKY_GRADIENT, 200, VISCOSITY_LAPLACIAN);
+                integrate(particles, simTime, EPSILON, BOUND_DAMPING, windowWidth, windowHeight);
+
+                accumulatedTime -= simDeltaTime;
+
+                simStepsThisSecond++; // count simulation step
+            }
+
+            // Update simulation FPS once per second
+            simFPSTimer += deltaTime;
+            if (simFPSTimer >= 1.0) {
+                simFPSDisplay = (float)simStepsThisSecond / simFPSTimer;
+                simStepsThisSecond = 0;
+                simFPSTimer = 0.0;
+            }
+        } else {
             computeDensityAndPressure(particles, H, H2, POLY6, GAS_CONSTANT, REST_DENSITY);
             computeForces(particles, H, -9.81f, 2.5f, SPIKY_GRADIENT, 200, VISCOSITY_LAPLACIAN);
             integrate(particles, simTime, EPSILON, BOUND_DAMPING, windowWidth, windowHeight);
-
-            accumulatedTime -= simDeltaTime;
-
-            simStepsThisSecond++; // count simulation step
         }
-
-        // Update simulation FPS once per second
-        simFPSTimer += deltaTime;
-        if (simFPSTimer >= 1.0) {
-            simFPSDisplay = (float)simStepsThisSecond / simFPSTimer;
-            simStepsThisSecond = 0;
-            simFPSTimer = 0.0;
-        }
+        
 
         // Rendering
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
