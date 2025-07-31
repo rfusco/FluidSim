@@ -3,7 +3,6 @@
 void initSPH(std::vector<Particle>& particles, int numParticles, float radius, float windowWidth, float windowHeight) {
     particles.clear();
 
-    const float jitter = 0.0005f;
     const float spacing = 2 * radius; // Default radius for particles
 
     // Compute grid size (make it as square as possible)
@@ -13,20 +12,22 @@ void initSPH(std::vector<Particle>& particles, int numParticles, float radius, f
     // Compute total width and height of the particle grid
     float gridWidth = (numX - 1) * spacing;
     float gridHeight = (numY - 1) * spacing;
+    
+    // Compute starting position to center the grid
+    float startX = (windowWidth - gridWidth) * 0.5f;
+    float startY = (windowHeight - gridHeight) * 0.5f;
 
-    // Compute offset to center the grid at (0,0)
-    float xOffset = windowWidth / 2.0f;
-    float yOffset = windowHeight / 2.0f;
 
     int count = 0;
     for (int y = 0; y < numY && count < numParticles; ++y) {
         for (int x = 0; x < numX && count < numParticles; ++x) {
+            float jitter = rand() % 100 / 90.0f; // Random jitter for particle position
             float jitterX = ((rand() / (float)RAND_MAX) - 0.5f) * jitter;
             float jitterY = ((rand() / (float)RAND_MAX) - 0.5f) * jitter;
 
             glm::vec2 pos = glm::vec2(
-                x * spacing + xOffset + jitterX,
-                y * spacing + yOffset + jitterY
+                startX + x * spacing + jitterX,
+                startY + y * spacing + jitterY
             );
 
             particles.emplace_back(pos.x, pos.y, radius);

@@ -98,7 +98,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialize SPH particles
-    initSPH(particles, 600, H/2, windowWidth, windowHeight);
+    initSPH(particles, 550, H/2, windowWidth, windowHeight);
 
     lastTime = glfwGetTime();
 
