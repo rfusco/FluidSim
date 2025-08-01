@@ -1,6 +1,8 @@
 #version 330 core
 
 in vec2 fragLocalPos;
+in vec3 fragColor;
+
 out vec4 FragColor;
 
 void main() {
@@ -11,5 +13,5 @@ void main() {
     }
 
     float alpha = smoothstep(1.0, 0.95, dist);
-    FragColor = vec4(1.0, 1.0, 1.0, alpha);
+    FragColor = vec4(fragColor, alpha);
 }

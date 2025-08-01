@@ -9,7 +9,7 @@
 
 namespace Renderer{
     GLuint shaderProgram;
-    GLuint vao, vbo, instanceVBO, radiusVBO;
+    GLuint vao, vbo, instanceVBO, radiusVBO, colorVBO;
     GLuint uProjectionLoc;
 
     glm::mat4 projection = glm::mat4(1.0f);
@@ -68,6 +68,7 @@ void Renderer::Init() {
 
     glGenBuffers(1, &instanceVBO);
     glGenBuffers(1, &radiusVBO);
+    glGenBuffers(1, &colorVBO);
 }
 
 void Renderer::UpdateProjection(int width, int height) {
@@ -80,21 +81,30 @@ void Renderer::UpdateProjection(int width, int height) {
     glUniformMatrix4fv(uProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 }
 
-void Renderer::RenderFrame(const std::vector<glm::vec2>& positions, const std::vector<float>& radii) {
+void Renderer::RenderFrame(const std::vector<glm::vec2>& positions, const std::vector<float>& radii, const std::vector<glm::vec3>& colors) {
     glUseProgram(shaderProgram);
     glBindVertexArray(vao);
 
+    // Positions
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
     glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec2), positions.data(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
     glEnableVertexAttribArray(1);
     glVertexAttribDivisor(1, 1);
 
+    // Radii
     glBindBuffer(GL_ARRAY_BUFFER, radiusVBO);
     glBufferData(GL_ARRAY_BUFFER, radii.size() * sizeof(float), radii.data(), GL_DYNAMIC_DRAW);
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
     glEnableVertexAttribArray(2);
     glVertexAttribDivisor(2, 1);
+
+    // Colors
+    glBindBuffer(GL_ARRAY_BUFFER, colorVBO);
+    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), colors.data(), GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(3);
+    glVertexAttribDivisor(3, 1);
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, positions.size());
 }
@@ -104,5 +114,6 @@ void Renderer::Cleanup() {
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &instanceVBO);
     glDeleteBuffers(1, &radiusVBO);
+    glDeleteBuffers(1, &colorVBO);
     glDeleteProgram(shaderProgram);
 }

@@ -106,13 +106,21 @@ int main() {
 
         std::vector<glm::vec2> positions;
         std::vector<float> radii;
+        std::vector<glm::vec3> colors;
         positions.reserve(particles.size());
         radii.reserve(particles.size());
         for (const auto& p : particles) {
             positions.push_back(p.position);
             radii.push_back(p.rad);
+
+            // Color based on force
+            //colors.push_back(glm::mix(glm::vec3(0, 0, 1), glm::vec3(1, 0, 0), glm::dot(p.force, p.force) / 100000000));
+            
+            // Color based on pressure
+            // Determined via max pressure and arbitrary scaling
+            colors.push_back(glm::mix(glm::vec3(0, 0, 1), glm::vec3(1, 0, 0),  (599975 + p.p) / 8.5));
         }
-        Renderer::RenderFrame(positions, radii);
+        Renderer::RenderFrame(positions, radii, colors);
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
