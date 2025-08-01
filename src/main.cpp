@@ -18,7 +18,8 @@ extern int windowHeight;
 // Controls
 bool simRunning = false;
 bool useSimFPS = false;
-int numParticles = 200; // Default number of particles
+int numParticles = 200;
+int colorMode = 0;
 
 std::vector<Particle> particles;
 
@@ -49,6 +50,9 @@ double accumulatedTime = 0.0;
 int simStepsThisSecond = 0;
 float simFPSDisplay = 0.0f;
 double simFPSTimer = 0.0;
+
+float minPressure = std::numeric_limits<float>::max();
+float maxPressure = std::numeric_limits<float>::lowest();
 
 int main() {
     // Initialize and create window
@@ -108,23 +112,26 @@ int main() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        // Gather particle data for rendering on GPU
         std::vector<glm::vec2> positions;
         std::vector<float> radii;
-        std::vector<glm::vec3> colors;
+        std::vector<float> pressures;
         positions.reserve(particles.size());
         radii.reserve(particles.size());
+        pressures.reserve(particles.size());
+
+        
         for (const auto& p : particles) {
             positions.push_back(p.position);
             radii.push_back(p.rad);
+            pressures.push_back(-p.p);
 
-            // Color based on force
-            //colors.push_back(glm::mix(glm::vec3(0, 0, 1), glm::vec3(1, 0, 0), glm::dot(p.force, p.force) / 100000000));
-            
-            // Color based on pressure
-            // Determined via max pressure and arbitrary scaling
-            colors.push_back(glm::mix(glm::vec3(0, 0, 1), glm::vec3(1, 0, 0),  (599975 + p.p) / 8.5));
+            minPressure = std::min(minPressure, -p.p);
+            maxPressure = std::max(maxPressure, -p.p);
         }
-        Renderer::RenderFrame(positions, radii, colors);
+        Renderer::RenderFrame(positions, radii, pressures, minPressure, maxPressure, colorMode);
+        minPressure = std::numeric_limits<float>::max();
+        maxPressure = std::numeric_limits<float>::min();
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -157,6 +164,9 @@ int main() {
         }
 
         // Color mode Selection
+        if(ImGui::Combo("Color Mode", &colorMode, "Jet\0Heat\0BlueRed\0")) {
+            // Update colors based on selected mode
+        }
 
 
         ImGui::End();

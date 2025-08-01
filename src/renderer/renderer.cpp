@@ -7,10 +7,10 @@
 #include <sstream>
 #include <iostream>
 
-namespace Renderer{
+namespace{
     GLuint shaderProgram;
-    GLuint vao, vbo, instanceVBO, radiusVBO, colorVBO;
-    GLuint uProjectionLoc;
+    GLuint vao, vbo, instanceVBO, radiusVBO, pressureVBO;
+    GLuint uProjectionLoc, uMinPressureLoc, uMaxPressureLoc, uColorModeLoc;
 
     glm::mat4 projection = glm::mat4(1.0f);
 
@@ -51,6 +51,9 @@ void Renderer::Init() {
     glDeleteShader(fs);
 
     uProjectionLoc = glGetUniformLocation(shaderProgram, "u_projection");
+    uMinPressureLoc = glGetUniformLocation(shaderProgram, "u_minPressure");
+    uMaxPressureLoc = glGetUniformLocation(shaderProgram, "u_maxPressure");
+    uColorModeLoc = glGetUniformLocation(shaderProgram, "u_colorMode");
 
     float quadVertices[] = {
         -1, -1,   1, -1,
@@ -68,7 +71,7 @@ void Renderer::Init() {
 
     glGenBuffers(1, &instanceVBO);
     glGenBuffers(1, &radiusVBO);
-    glGenBuffers(1, &colorVBO);
+    glGenBuffers(1, &pressureVBO);
 }
 
 void Renderer::UpdateProjection(int width, int height) {
@@ -81,7 +84,14 @@ void Renderer::UpdateProjection(int width, int height) {
     glUniformMatrix4fv(uProjectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 }
 
-void Renderer::RenderFrame(const std::vector<glm::vec2>& positions, const std::vector<float>& radii, const std::vector<glm::vec3>& colors) {
+void Renderer::RenderFrame(
+    const std::vector<glm::vec2>& positions, 
+    const std::vector<float>& radii, 
+    const std::vector<float>& pressures,
+    float minPressure,
+    float maxPressure,
+    int colorMode
+) {
     glUseProgram(shaderProgram);
     glBindVertexArray(vao);
 
@@ -99,12 +109,17 @@ void Renderer::RenderFrame(const std::vector<glm::vec2>& positions, const std::v
     glEnableVertexAttribArray(2);
     glVertexAttribDivisor(2, 1);
 
-    // Colors
-    glBindBuffer(GL_ARRAY_BUFFER, colorVBO);
-    glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(glm::vec3), colors.data(), GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    // Pressures
+    glBindBuffer(GL_ARRAY_BUFFER, pressureVBO);
+    glBufferData(GL_ARRAY_BUFFER, pressures.size() * sizeof(float), pressures.data(), GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)0);
     glEnableVertexAttribArray(3);
     glVertexAttribDivisor(3, 1);
+
+    // Uniforms
+    glUniform1f(uMinPressureLoc, minPressure);
+    glUniform1f(uMaxPressureLoc, maxPressure);
+    glUniform1i(uColorModeLoc, colorMode);
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, positions.size());
 }
@@ -114,6 +129,6 @@ void Renderer::Cleanup() {
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &instanceVBO);
     glDeleteBuffers(1, &radiusVBO);
-    glDeleteBuffers(1, &colorVBO);
+    glDeleteBuffers(1, &pressureVBO);
     glDeleteProgram(shaderProgram);
 }
