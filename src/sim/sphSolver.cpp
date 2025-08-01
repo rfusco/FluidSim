@@ -99,7 +99,7 @@ void integrate(std::vector<Particle>& particles, float timeStep, float EPSILON, 
         {
             p.velocity.x *= -BOUND_DAMPING;
             p.position.x = windowWidth - EPSILON - p.rad;
-            p.force.x -= -(windowWidth - p.position.x + p.rad) * boundaryStiffness - p.velocity.x * p.m;
+            p.force.x -= (windowWidth - p.position.x + p.rad) * boundaryStiffness - p.velocity.x * p.m;
         }
         // Bottom
         if (p.position.y - p.rad - EPSILON < 0)
