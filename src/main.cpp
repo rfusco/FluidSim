@@ -18,7 +18,7 @@ extern int windowHeight;
 // Controls
 bool simRunning = false;
 bool useSimFPS = false;
-int numParticles = 200;
+int numParticles = 400;
 int colorMode = 0;
 
 std::vector<Particle> particles;

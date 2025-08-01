@@ -84,23 +84,22 @@ void computeForces(std::vector<Particle>& particles, float H, float G, float MAS
 }
 
 void integrate(std::vector<Particle>& particles, float timeStep, float EPSILON, float BOUND_DAMPING, float windowWidth, float windowHeight) {
+    float boundaryStiffness = 100.0f;
     for(auto &p : particles){
-        // Euler integration
-        p.velocity += p.force / p.rho * static_cast<float>(timeStep); // Update velocity
-        p.position += p.velocity * timeStep; // Update position
-
         // Enforce boundary conditions
         // Left
         if (p.position.x - p.rad - EPSILON < 0)
         {
             p.velocity.x *= -BOUND_DAMPING;
             p.position.x = EPSILON + p.rad;
+            p.force.x += -(p.position.x - p.rad) * boundaryStiffness - p.velocity.x * p.m;
         }
         // Right
         if (p.position.x + p.rad + EPSILON > windowWidth)
         {
             p.velocity.x *= -BOUND_DAMPING;
             p.position.x = windowWidth - EPSILON - p.rad;
+            p.force.x -= -(windowWidth - p.position.x + p.rad) * boundaryStiffness - p.velocity.x * p.m;
         }
         // Bottom
         if (p.position.y - p.rad - EPSILON < 0)
@@ -114,5 +113,9 @@ void integrate(std::vector<Particle>& particles, float timeStep, float EPSILON, 
             p.velocity.y *= -BOUND_DAMPING;
             p.position.y = windowHeight - EPSILON - p.rad;
         }
+
+        // Euler integration
+        p.velocity += p.force / p.rho * timeStep; // Update velocity
+        p.position += p.velocity * timeStep; // Update position
     }
 }
