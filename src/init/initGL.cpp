@@ -1,9 +1,11 @@
 #include "init/initGL.hpp"
 #include "renderer/renderer.hpp"
+#include "sphSolver.hpp"
 #include <iostream>
 
 int windowWidth = 1000;
 int windowHeight = 800;
+std::vector<Particle> particles;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     windowWidth = width;

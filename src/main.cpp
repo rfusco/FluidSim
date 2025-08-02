@@ -21,7 +21,7 @@ bool useSimFPS = false;
 int numParticles = 400;
 int colorMode = 0;
 
-std::vector<Particle> particles;
+extern std::vector<Particle> particles;
 
 // Constants
 float H = 16; // Kernel smoothing radius
