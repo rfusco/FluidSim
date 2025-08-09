@@ -32,7 +32,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialize SPH particles
-    initSPH(&config);
+    initSPH(config);
 
     config.lastTime = glfwGetTime();
 
@@ -45,9 +45,9 @@ int main() {
         if(config.useSimFPS && config.simRunning){
             // Simulation update with fixed timestep
             while (config.accumulatedTime >= config.simDeltaTime) {
-                computeDensityAndPressure(&config);
-                computeForces(&config);
-                integrate(&config);
+                computeDensityAndPressure(config);
+                computeForces(config);
+                integrate(config);
 
                 config.accumulatedTime -= config.simDeltaTime;
 
@@ -62,9 +62,9 @@ int main() {
                 config.simFPSTimer = 0.0;
             }
         } else if(config.simRunning){
-            computeDensityAndPressure(&config);
-            computeForces(&config);
-            integrate(&config);
+            computeDensityAndPressure(config);
+            computeForces(config);
+            integrate(config);
         }
         
 
@@ -113,14 +113,14 @@ int main() {
         // Reset simulation
         if(ImGui::Button("Reset Simulation")) {
             config.particles.clear();
-            initSPH(&config);
+            initSPH(config);
             config.simRunning = false;
         }
 
         // Change number of particles
         if(ImGui::SliderInt("Number of Particles", &config.numParticles, 1, 1000)) {
             config.particles.clear();
-            initSPH(&config);
+            initSPH(config);
         }
 
         // Color mode Selection

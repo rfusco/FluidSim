@@ -25,7 +25,7 @@
  * 
  * @return void
  */
-void initSPH(simConfig *config);
+void initSPH(simConfig &config);
 
 /**
  * @brief Computes density and pressure for each particle.
@@ -39,7 +39,7 @@ void initSPH(simConfig *config);
  * @param GAS_CONSTANT     Gas constant for pressure computation.
  * @param REST_DENSITY     Rest fluid density.
  */
-void computeDensityAndPressure(simConfig *config);
+void computeDensityAndPressure(simConfig &config);
 
 /**
  * @brief Computes all forces on each particle.
@@ -57,7 +57,7 @@ void computeDensityAndPressure(simConfig *config);
  * @param VISCOSITY                Viscosity coefficient.
  * @param VISCOSITY_LAPLACIAN      Precomputed viscosity Laplacian coefficient.
  */
-void computeForces(simConfig *config);
+void computeForces(simConfig &config);
 
 /**
  * @brief Integrates particle motion using Euler Method.
@@ -73,5 +73,5 @@ void computeForces(simConfig *config);
  * 
  * @return void
  */
-void integrate(simConfig *config);
+void integrate(simConfig &config);
 
