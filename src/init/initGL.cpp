@@ -1,21 +1,21 @@
 #include "init/initGL.hpp"
 #include "renderer/renderer.hpp"
 #include "sphSolver.hpp"
+#include "simConfig.hpp"
 #include <iostream>
 
-int windowWidth = 1000;
-int windowHeight = 800;
-std::vector<Particle> particles;
-
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    windowWidth = width;
-    windowHeight = height;
+    auto *config = static_cast<simConfig*>(glfwGetWindowUserPointer(window));
+    if(config){
+        config->windowWidth = width;
+        config->windowHeight = height;
+    }
     glViewport(0, 0, width, height);
     Renderer::UpdateProjection(width, height);
 }
 
 // Initialize OpenGL and create a window
-GLFWwindow* InitGL(void){
+GLFWwindow* InitGL(simConfig &config){
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW\n";
         return nullptr;
@@ -25,7 +25,7 @@ GLFWwindow* InitGL(void){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Instanced Circles", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(config.windowWidth, config.windowHeight, "Instanced Circles", NULL, NULL);
     if (!window) {
         std::cerr << "Failed to create GLFW window\n";
         glfwTerminate();
@@ -43,6 +43,7 @@ GLFWwindow* InitGL(void){
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glfwSetWindowUserPointer(window, &config);
 
     return window;
 }

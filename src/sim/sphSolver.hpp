@@ -2,12 +2,14 @@
 #include <vector>
 #include <glm/glm.hpp>
 
-struct Particle{
-    Particle(float x_, float y_, float rad_ = 0.05f) : position(x_, y_), velocity(0.0f, 0.0f), force(0.0f, 0.0f), rho(1), p(0), rad(rad_){}
-    glm::vec2 position, velocity, force;
-    glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f); // Default color white
-    float rho, p, rad, m = 2.5f; // density, pressure, radius, mass
-};
+#include "simConfig.hpp"
+
+// struct Particle{
+//     Particle(float x_, float y_, float rad_ = 0.05f) : position(x_, y_), velocity(0.0f, 0.0f), force(0.0f, 0.0f), rho(1), p(0), rad(rad_){}
+//     glm::vec2 position, velocity, force;
+//     glm::vec3 color = glm::vec3(1.0f, 1.0f, 1.0f); // Default color white
+//     float rho, p, rad, m = 2.5f; // density, pressure, radius, mass
+// };
 
 /**
  * @brief Initializes a new smoothed-particle hydrodynamic simulation in a centered grid.
@@ -23,7 +25,7 @@ struct Particle{
  * 
  * @return void
  */
-void initSPH(std::vector<Particle>& particles, int numParticles, float radius, float windowWidth, float windowHeight);
+void initSPH(simConfig *config);
 
 /**
  * @brief Computes density and pressure for each particle.
@@ -37,7 +39,7 @@ void initSPH(std::vector<Particle>& particles, int numParticles, float radius, f
  * @param GAS_CONSTANT     Gas constant for pressure computation.
  * @param REST_DENSITY     Rest fluid density.
  */
-void computeDensityAndPressure(std::vector<Particle>& particles, float H, float H2, float POLY6, float GAS_CONSTANT, float REST_DENSITY);
+void computeDensityAndPressure(simConfig *config);
 
 /**
  * @brief Computes all forces on each particle.
@@ -55,7 +57,7 @@ void computeDensityAndPressure(std::vector<Particle>& particles, float H, float 
  * @param VISCOSITY                Viscosity coefficient.
  * @param VISCOSITY_LAPLACIAN      Precomputed viscosity Laplacian coefficient.
  */
-void computeForces(std::vector<Particle>& particles, float H, float G, float MASS, float SPIKY_GRADIENT, float VISCOSITY, float VISCOSITY_LAPLACIAN);
+void computeForces(simConfig *config);
 
 /**
  * @brief Integrates particle motion using Euler Method.
@@ -71,5 +73,5 @@ void computeForces(std::vector<Particle>& particles, float H, float G, float MAS
  * 
  * @return void
  */
-void integrate(std::vector<Particle>& particles, float timeStep, float EPSILON, float BOUND_DAMPING, float windowWidth, float windowHeight);
+void integrate(simConfig *config);
 

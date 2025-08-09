@@ -11,57 +11,17 @@
 #include "sphSolver.hpp"
 #include "kernel.hpp"
 #include "init/initGL.hpp"
-
-extern int windowWidth;
-extern int windowHeight;
-
-// Controls
-bool simRunning = false;
-bool useSimFPS = false;
-int numParticles = 400;
-int colorMode = 0;
-
-extern std::vector<Particle> particles;
-
-// Constants
-float H = 16; // Kernel smoothing radius
-float H2 = H * H; // Squared smoothing radius
-float REST_DENSITY = 300.f;  // rest density
-float GAS_CONSTANT = 2000.f; // const for equation of state
-
-// Precomputed kernel constants
-const static float POLY6 = poly6(H);
-const static float SPIKY_GRADIENT = spikyGradient(H);
-const static float VISCOSITY_LAPLACIAN = viscosityLaplacian(H);
-
-// Sim parameters
-float EPSILON = H / 100000000;
-float BOUND_DAMPING = 0.5f; // damping factor for boundary collisions
-
-float simTime = 0.0007;
-
-// Make fps independent from simulation speed
-float simFPS = 60; // target FPS for simulation
-float simDeltaTime = 1 / simFPS; // fixed timestep for simulation
-double lastTime = 0.0;
-double accumulatedTime = 0.0;
-
-// Simulation FPS measurement
-int simStepsThisSecond = 0;
-float simFPSDisplay = 0.0f;
-double simFPSTimer = 0.0;
-
-float minPressure = std::numeric_limits<float>::max();
-float maxPressure = std::numeric_limits<float>::lowest();
+#include "simConfig.hpp"
 
 int main() {
+    simConfig config;
     // Initialize and create window
-    GLFWwindow* window = InitGL();
+    GLFWwindow* window = InitGL(config);
     if (!window) return -1;
 
     // Initialize renderer
     Renderer::Init();
-    Renderer::UpdateProjection(windowWidth, windowHeight);
+    Renderer::UpdateProjection(config.windowWidth, config.windowHeight);
 
     // Setup ImGui
     IMGUI_CHECKVERSION();
@@ -72,39 +32,39 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     // Initialize SPH particles
-    initSPH(particles, numParticles, H/2, windowWidth, windowHeight);
+    initSPH(&config);
 
-    lastTime = glfwGetTime();
+    config.lastTime = glfwGetTime();
 
     while (!glfwWindowShouldClose(window)) {
         double currentTime = glfwGetTime();
-        double deltaTime = currentTime - lastTime;
-        lastTime = currentTime;
-        accumulatedTime += deltaTime;
+        double deltaTime = currentTime - config.lastTime;
+        config.lastTime = currentTime;
+        config.accumulatedTime += deltaTime;
 
-        if(useSimFPS && simRunning){
+        if(config.useSimFPS && config.simRunning){
             // Simulation update with fixed timestep
-            while (accumulatedTime >= simDeltaTime) {
-                computeDensityAndPressure(particles, H, H2, POLY6, GAS_CONSTANT, REST_DENSITY);
-                computeForces(particles, H, -9.81f, 2.5f, SPIKY_GRADIENT, 200, VISCOSITY_LAPLACIAN);
-                integrate(particles, simTime, EPSILON, BOUND_DAMPING, windowWidth, windowHeight);
+            while (config.accumulatedTime >= config.simDeltaTime) {
+                computeDensityAndPressure(&config);
+                computeForces(&config);
+                integrate(&config);
 
-                accumulatedTime -= simDeltaTime;
+                config.accumulatedTime -= config.simDeltaTime;
 
-                simStepsThisSecond++; // count simulation step
+                config.simStepsThisSecond++; // count simulation step
             }
 
             // Update simulation FPS once per second
-            simFPSTimer += deltaTime;
-            if (simFPSTimer >= 1.0) {
-                simFPSDisplay = (float)simStepsThisSecond / simFPSTimer;
-                simStepsThisSecond = 0;
-                simFPSTimer = 0.0;
+            config.simFPSTimer += deltaTime;
+            if (config.simFPSTimer >= 1.0) {
+                config.simFPSDisplay = (float)config.simStepsThisSecond / config.simFPSTimer;
+                config.simStepsThisSecond = 0;
+                config.simFPSTimer = 0.0;
             }
-        } else if(simRunning){
-            computeDensityAndPressure(particles, H, H2, POLY6, GAS_CONSTANT, REST_DENSITY);
-            computeForces(particles, H, -9.81f, 2.5f, SPIKY_GRADIENT, 200, VISCOSITY_LAPLACIAN);
-            integrate(particles, simTime, EPSILON, BOUND_DAMPING, windowWidth, windowHeight);
+        } else if(config.simRunning){
+            computeDensityAndPressure(&config);
+            computeForces(&config);
+            integrate(&config);
         }
         
 
@@ -116,22 +76,22 @@ int main() {
         std::vector<glm::vec2> positions;
         std::vector<float> radii;
         std::vector<float> pressures;
-        positions.reserve(particles.size());
-        radii.reserve(particles.size());
-        pressures.reserve(particles.size());
+        positions.reserve(config.particles.size());
+        radii.reserve(config.particles.size());
+        pressures.reserve(config.particles.size());
 
         
-        for (const auto& p : particles) {
+        for (const auto& p : config.particles) {
             positions.push_back(p.position);
             radii.push_back(p.rad);
             pressures.push_back(-p.p);
 
-            minPressure = std::min(minPressure, -p.p);
-            maxPressure = std::max(maxPressure, -p.p);
+            config.minPressure = std::min(config.minPressure, -p.p);
+            config.maxPressure = std::max(config.maxPressure, -p.p);
         }
-        Renderer::RenderFrame(positions, radii, pressures, minPressure, maxPressure, colorMode);
-        minPressure = std::numeric_limits<float>::max();
-        maxPressure = std::numeric_limits<float>::min();
+        Renderer::RenderFrame(positions, radii, pressures, config.minPressure, config.maxPressure, config.colorMode);
+        config.minPressure = std::numeric_limits<float>::max();
+        config.maxPressure = std::numeric_limits<float>::min();
 
         // Start ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -141,30 +101,30 @@ int main() {
         // Performance window
         ImGui::Begin("Performance & Controls");
         ImGui::Text("Program FPS: %.2f", io.Framerate);
-        ImGui::Text("Simulation FPS: %.2f", simFPSDisplay);
-        ImGui::Text("Particles: %zu", particles.size());
+        ImGui::Text("Simulation FPS: %.2f", config.simFPSDisplay);
+        ImGui::Text("Particles: %zu", config.particles.size());
 
         // Controls
         // Start/Stop simulation
-        if(ImGui::Button(simRunning ? "Stop Simulation" : "Start Simulation")) {
-            simRunning = !simRunning;
+        if(ImGui::Button(config.simRunning ? "Stop Simulation" : "Start Simulation")) {
+            config.simRunning = !config.simRunning;
         }
 
         // Reset simulation
         if(ImGui::Button("Reset Simulation")) {
-            particles.clear();
-            initSPH(particles, numParticles, H/2, windowWidth, windowHeight);
-            simRunning = false;
+            config.particles.clear();
+            initSPH(&config);
+            config.simRunning = false;
         }
 
         // Change number of particles
-        if(ImGui::SliderInt("Number of Particles", &numParticles, 1, 1000)) {
-            particles.clear();
-            initSPH(particles, numParticles, H/2, windowWidth, windowHeight);
+        if(ImGui::SliderInt("Number of Particles", &config.numParticles, 1, 1000)) {
+            config.particles.clear();
+            initSPH(&config);
         }
 
         // Color mode Selection
-        if(ImGui::Combo("Color Mode", &colorMode, "Jet\0Heat\0BlueRed\0")) {
+        if(ImGui::Combo("Color Mode", &config.colorMode, "Jet\0Heat\0BlueRed\0")) {
             // Update colors based on selected mode
         }
 
