@@ -100,7 +100,7 @@ void integrate(simConfig &config) {
         {
             p.velocity.x *= -config.BOUND_DAMPING;
             p.position.x = config.windowWidth - config.EPSILON - p.rad;
-            p.force.x -= (config.windowWidth - p.position.x + p.rad) * boundaryStiffness - p.velocity.x * p.m;
+            p.force.x -= (config.windowWidth - p.position.x - p.rad) * boundaryStiffness - p.velocity.x * p.m;
         }
         // Bottom
         if (p.position.y - p.rad - config.EPSILON < 0)
