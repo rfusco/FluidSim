@@ -16,8 +16,6 @@ class Simulation{
     private:
         // Init helpers
         void initGLFWAndWindow();
-        void initRenderer();
-        void initImGui();
 
         // main loop helpers
         void update(double dt);
@@ -29,12 +27,12 @@ class Simulation{
         void resetSimulation();
 
         // config & state
-        simConfig config_;
-        GLFWwindow* window_ = nullptr;
+        simConfig config;
+        GLFWwindow* window = nullptr;
 
         // timing
         using clock_t = std::chrono::high_resolution_clock;
-        clock_t::time_point lastTime_;
+        clock_t::time_point lastTime;
 
         void throwIfWindowNull();
 };
