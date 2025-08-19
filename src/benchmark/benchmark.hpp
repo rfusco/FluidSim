@@ -14,4 +14,3 @@
  * @return Average fps (float) 
  */
 float benchmarkAveragePerformance(int numParticles, float sampleTime, int numSamples);
-//float toCSV

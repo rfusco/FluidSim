@@ -145,7 +145,7 @@ void Simulation::render(){
 
     for (const auto& p : config.particles) {
         positions.push_back(p.position);
-        radii.push_back(p.rad);
+        radii.push_back(config.radius);
         pressures.push_back(-p.p);
 
         config.minPressure = std::min(config.minPressure, -p.p);

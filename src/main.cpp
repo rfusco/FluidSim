@@ -2,8 +2,9 @@
 #include "Simulation.hpp"
 #include <iostream>
 
-int main() {
+int main(int argc, char* argv[]) {
     try {
+        std::cout << argc;
         Simulation sim;
         sim.run();
         return 0;

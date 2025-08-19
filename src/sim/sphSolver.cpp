@@ -31,7 +31,7 @@ void initSPH(simConfig &config) {
                 startY + y * spacing + jitterY
             );
 
-            config.particles.emplace_back(pos.x, pos.y, config.radius);
+            config.particles.emplace_back(pos.x, pos.y);
             ++count;
         }
     }
@@ -89,30 +89,30 @@ void integrate(simConfig &config) {
     for(auto &p : config.particles){
         // Enforce boundary conditions
         // Left
-        if (p.position.x - p.rad - config.EPSILON < 0)
+        if (p.position.x - config.radius - config.EPSILON < 0)
         {
             p.velocity.x *= -config.BOUND_DAMPING;
-            p.position.x = config.EPSILON + p.rad;
-            p.force.x += -(p.position.x - p.rad) * boundaryStiffness - p.velocity.x * p.m;
+            p.position.x = config.EPSILON + config.radius;
+            p.force.x += -(p.position.x - config.radius) * boundaryStiffness - p.velocity.x * p.m;
         }
         // Right
-        if (p.position.x + p.rad + config.EPSILON > config.windowWidth)
+        if (p.position.x + config.radius + config.EPSILON > config.windowWidth)
         {
             p.velocity.x *= -config.BOUND_DAMPING;
-            p.position.x = config.windowWidth - config.EPSILON - p.rad;
-            p.force.x -= (config.windowWidth - p.position.x - p.rad) * boundaryStiffness - p.velocity.x * p.m;
+            p.position.x = config.windowWidth - config.EPSILON - config.radius;
+            p.force.x -= (config.windowWidth - p.position.x - config.radius) * boundaryStiffness - p.velocity.x * p.m;
         }
         // Bottom
-        if (p.position.y - p.rad - config.EPSILON < 0)
+        if (p.position.y - config.radius - config.EPSILON < 0)
         {
             p.velocity.y *= -config.BOUND_DAMPING;
-            p.position.y = config.EPSILON + p.rad;
+            p.position.y = config.EPSILON + config.radius;
         }
         // Top
-        if (p.position.y + p.rad + config.EPSILON > config.windowHeight)
+        if (p.position.y + config.radius + config.EPSILON > config.windowHeight)
         {
             p.velocity.y *= -config.BOUND_DAMPING;
-            p.position.y = config.windowHeight - config.EPSILON - p.rad;
+            p.position.y = config.windowHeight - config.EPSILON - config.radius;
         }
 
         // Euler integration
