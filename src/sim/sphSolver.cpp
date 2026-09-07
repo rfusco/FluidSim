@@ -46,7 +46,8 @@ void computeDensityAndPressure(std::vector<Particle>& particles, float H, float 
 
             // Only particles within the kernel smoothing radius contribute to density
             if (r2 < H2){
-                pi.rho += pj.m * POLY6 * pow(H2 - r2, 3);
+                float diff = H2 - r2;
+                pi.rho += pj.m * POLY6 * (diff * diff * diff); // was pow(diff, 3) — pow() isn't reliably folded to multiplies by the compiler, and this runs O(n^2) times per step
             }
         }
         pi.p = GAS_CONSTANT * (pi.rho - REST_DENSITY); // Pressure based on density
@@ -54,7 +55,8 @@ void computeDensityAndPressure(std::vector<Particle>& particles, float H, float 
 }
 
 void computeForces(std::vector<Particle>& particles, float H, float G, float MASS, float SPIKY_GRADIENT, float VISCOSITY, float VISCOSITY_LAPLACIAN){
-    
+    const float H2 = H * H; // avoids taking sqrt() before knowing a pair is even in range — see below
+
     for (auto &pi : particles){
         glm::vec2 pForce = glm::vec2(0.0f, 0.0f);
         glm::vec2 vForce = glm::vec2(0.0f, 0.0f);
@@ -64,18 +66,23 @@ void computeForces(std::vector<Particle>& particles, float H, float G, float MAS
 
             glm::vec2 rij = pj.position - pi.position;
             float r2 = glm::dot(rij, rij); // dot product with self == squared norm
-            float r = sqrt(r2);
 
-            // r > 1e-6f guards against coincident particles (possible from initSPH's
-            // jitter) producing a 0/0 division in normalizedRij below, which would
-            // propagate NaN through the whole simulation.
-            if (r > 1e-6f && r < H) {
+            // Checked on r2 now instead of r, so sqrt() below only runs for pairs
+            // already known to be in range — previously computed unconditionally
+            // for every one of the O(n^2) pairs, including ones far outside H.
+            // 1e-12f (~ (1e-6f)^2) guards against coincident particles (possible
+            // from initSPH's jitter) producing a 0/0 division in normalizedRij.
+            if (r2 > 1e-12f && r2 < H2) {
+                float r = sqrt(r2);
+                float diff = H - r;
+                float diff3 = diff * diff * diff; // was pow(diff, 3)
+
                 // Pressure force
                 glm::vec2 normalizedRij = rij / r; // Normalize the vector
-                pForce += MASS * (pi.p + pj.p) / (2.0f * pj.rho) * static_cast<float>(SPIKY_GRADIENT * pow(H - r, 3)) * -normalizedRij;
+                pForce += MASS * (pi.p + pj.p) / (2.0f * pj.rho) * (SPIKY_GRADIENT * diff3) * -normalizedRij;
 
                 // Viscosity force
-                vForce += VISCOSITY * pj.m / pj.rho * (pj.velocity - pi.velocity) * static_cast<float>(VISCOSITY_LAPLACIAN * (H - r));
+                vForce += VISCOSITY * pj.m / pj.rho * (pj.velocity - pi.velocity) * (VISCOSITY_LAPLACIAN * diff);
             }
         }
         // Gravity force. pForce/vForce above are left as force-densities (not yet

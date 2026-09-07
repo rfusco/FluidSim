@@ -383,6 +383,17 @@
         { n: 2500, avg: 1142.15, min: 742.348,  max: 2263.24,  fps: 0.875538 },
       ]
     },
+    {
+      id: '02_hotloop_math', num: '2', label: 'Hot-loop math', colorHex: '#c9b929',
+      desc: 'Still brute-force O(n&sup2;) &mdash; this stage only cuts wasted work inside each pair check, so the win is a modest constant factor, not a shape change. <code>computeForces</code> used to take a <code>sqrt()</code> of every pair\'s squared distance before checking whether it was even in range; the cutoff is now checked on the squared distance first (<code>r2 &lt; H2</code>), so <code>sqrt()</code> only runs for pairs actually within the kernel radius &mdash; this also absorbed Stage 1\'s zero-distance guard onto <code>r2</code> directly. Both kernels also replaced <code>pow(x, 3)</code> with plain multiplication, since <code>pow()</code> with a small integer exponent isn\'t reliably folded into multiplies by the compiler. Verified bit-for-bit equivalent physics (fixed-seed 50-step run diffed against Stage 1, matching to float-rounding precision) before trusting these numbers. Measured effect here was within the run\'s own noise &mdash; not surprising, since at these particle counts the O(n&sup2;) pair count itself, not the per-pair math, is what dominates. That\'s what Stage 3 targets.',
+      rows: [
+        { n: 100,  avg: 1.21322, min: 0.8137,   max: 6.0524,   fps: 824.251 },
+        { n: 250,  avg: 4.82296, min: 3.9645,   max: 8.0494,   fps: 207.342 },
+        { n: 500,  avg: 43.3879, min: 15.1937,  max: 242.015,  fps: 23.0479 },
+        { n: 1000, avg: 175.64,  min: 74.0508,  max: 574.02,   fps: 5.69345 },
+        { n: 2500, avg: 1043.3,  min: 695.11,   max: 2479.04,  fps: 0.958494 },
+      ]
+    },
   ];
 
   // ---- Meta row -----------------------------------------------------------
