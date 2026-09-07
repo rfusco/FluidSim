@@ -118,7 +118,7 @@ void StepAndRenderFrame(GLFWwindow* window, ImGuiIO& io) {
     }
     Renderer::RenderFrame(positions, radii, pressures, minPressure, maxPressure, colorMode);
     minPressure = std::numeric_limits<float>::max();
-    maxPressure = std::numeric_limits<float>::min(); // NOTE: known bug (should be lowest()) — fixed in Stage 1, kept as-is here to preserve baseline behavior
+    maxPressure = std::numeric_limits<float>::lowest();
 
     // Start ImGui frame
     ImGui_ImplOpenGL3_NewFrame();

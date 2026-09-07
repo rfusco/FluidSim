@@ -66,7 +66,10 @@ void computeForces(std::vector<Particle>& particles, float H, float G, float MAS
             float r2 = glm::dot(rij, rij); // dot product with self == squared norm
             float r = sqrt(r2);
 
-            if (r < H) {
+            // r > 1e-6f guards against coincident particles (possible from initSPH's
+            // jitter) producing a 0/0 division in normalizedRij below, which would
+            // propagate NaN through the whole simulation.
+            if (r > 1e-6f && r < H) {
                 // Pressure force
                 glm::vec2 normalizedRij = rij / r; // Normalize the vector
                 pForce += MASS * (pi.p + pj.p) / (2.0f * pj.rho) * static_cast<float>(SPIKY_GRADIENT * pow(H - r, 3)) * -normalizedRij;
@@ -75,8 +78,11 @@ void computeForces(std::vector<Particle>& particles, float H, float G, float MAS
                 vForce += VISCOSITY * pj.m / pj.rho * (pj.velocity - pi.velocity) * static_cast<float>(VISCOSITY_LAPLACIAN * (H - r));
             }
         }
-        // Gravity force
-        glm::vec2 gForce = glm::vec2(0.0f, G * MASS / pi.rho);
+        // Gravity force. pForce/vForce above are left as force-densities (not yet
+        // divided by rho) — integrate() applies a single /pi.rho to the combined
+        // force. So gForce must be pre-multiplied by rho here, not divided, or
+        // gravity's contribution ends up as G*MASS/rho^2 instead of G.
+        glm::vec2 gForce = glm::vec2(0.0f, G * pi.rho);
 
         // Combine forces
         pi.force = pForce + vForce + gForce;

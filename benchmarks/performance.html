@@ -372,6 +372,17 @@
         { n: 2500, avg: 1032.39, min: 731.854,  max: 1526.06,  fps: 0.968625 },
       ]
     },
+    {
+      id: '01_correctness_fixes', num: '1', label: 'Correctness fixes', colorHex: '#e8942a',
+      desc: 'Three bug fixes, no algorithmic change &mdash; frame time should (and does) stay within noise of baseline. Gravity was applied twice: <code>computeForces</code> pre-divided it by density, then <code>integrate</code> divided the combined force by density again, making its real contribution G&middot;MASS/&rho;&sup2; instead of G. Fixed to <code>G * pi.rho</code> so the single division in <code>integrate</code> recovers exactly G &mdash; verified with a standalone check: first-step average Vy landed on G&middot;simTime to 6 decimal places. Added a zero-distance guard (<code>r &gt; 1e-6f</code>) so two coincident particles from <code>initSPH</code>&rsquo;s jitter can&rsquo;t divide by zero and seed a NaN. And fixed <code>maxPressure</code>&rsquo;s per-frame reset, which was using <code>float::min()</code> (~0) instead of <code>float::lowest()</code> (large negative) &mdash; a wrong sentinel that silently corrupted the color-mapping range every frame after the first.',
+      rows: [
+        { n: 100,  avg: 1.08864,  min: 0.9557,   max: 2.5777,   fps: 918.579 },
+        { n: 250,  avg: 5.42982,  min: 3.5742,   max: 27.8343,  fps: 184.168 },
+        { n: 500,  avg: 42.9488,  min: 13.4647,  max: 213.856,  fps: 23.2836 },
+        { n: 1000, avg: 173.39,  min: 92.7692,  max: 494.458,  fps: 5.76734 },
+        { n: 2500, avg: 1142.15, min: 742.348,  max: 2263.24,  fps: 0.875538 },
+      ]
+    },
   ];
 
   // ---- Meta row -----------------------------------------------------------
