@@ -1,0 +1,558 @@
+<title>FluidSim Performance</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #f2f5f6;
+    --surface: #ffffff;
+    --surface-2: #eaeef0;
+    --border: #d7dee1;
+    --text: #10181c;
+    --text-dim: #5c6d74;
+    --text-faint: #8a999e;
+    --accent: #1a7a8a;
+    --accent-soft: #e4f1f3;
+    --shadow: 0 1px 2px rgba(16, 24, 28, 0.06), 0 8px 24px -12px rgba(16, 24, 28, 0.18);
+
+    --s0: #e2432c;
+    --s1: #e8942a;
+    --s2: #c9b929;
+    --s3: #4cb968;
+    --s4: #2aabd1;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0a0f13;
+      --surface: #121a20;
+      --surface-2: #182229;
+      --border: #24333c;
+      --text: #e9eff1;
+      --text-dim: #93a6ad;
+      --text-faint: #5f747c;
+      --accent: #4fd6e8;
+      --accent-soft: #14313a;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -16px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0a0f13;
+    --surface: #121a20;
+    --surface-2: #182229;
+    --border: #24333c;
+    --text: #e9eff1;
+    --text-dim: #93a6ad;
+    --text-faint: #5f747c;
+    --accent: #4fd6e8;
+    --accent-soft: #14313a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -16px rgba(0, 0, 0, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', -apple-system, Segoe UI, sans-serif;
+    line-height: 1.5;
+  }
+
+  .page {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: clamp(40px, 6vw, 64px);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    margin: 6px 0 12px;
+    line-height: 0.98;
+  }
+
+  .lede {
+    max-width: 62ch;
+    font-size: 16px;
+    color: var(--text-dim);
+    text-wrap: balance;
+  }
+
+  .lede strong { color: var(--text); font-weight: 600; }
+  .lede code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.92em;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+
+  .meta-chip {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .meta-chip b { color: var(--text); font-weight: 600; }
+
+  section.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    margin-top: 28px;
+    overflow: hidden;
+  }
+
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 22px 26px 0;
+  }
+
+  .panel-head h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+
+  .panel-head .axis-note {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--text-faint);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .chart-wrap {
+    padding: 8px 18px 4px;
+    position: relative;
+  }
+
+  svg#chart { width: 100%; height: auto; display: block; overflow: visible; }
+
+  svg#chart text {
+    font-family: 'IBM Plex Mono', monospace;
+    fill: var(--text-faint);
+  }
+
+  .grid-line { stroke: var(--border); stroke-width: 1; }
+  .axis-line { stroke: var(--text-faint); stroke-width: 1; }
+
+  .series-path {
+    fill: none;
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .range-line { stroke-width: 1.5; opacity: 0.5; }
+  .pt {
+    stroke: var(--surface);
+    stroke-width: 2;
+    cursor: pointer;
+  }
+  .pt:hover, .pt:focus { stroke: var(--text); outline: none; }
+
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    box-shadow: var(--shadow);
+    min-width: 168px;
+    transition: opacity 0.1s ease;
+  }
+  .tooltip[hidden] { display: none; }
+  .tooltip .tt-stage { font-weight: 600; margin-bottom: 4px; }
+  .tooltip .tt-row { display: flex; justify-content: space-between; gap: 14px; color: var(--text-dim); }
+  .tooltip .tt-row b { color: var(--text); font-variant-numeric: tabular-nums; font-weight: 500; }
+
+  ul.legend {
+    list-style: none;
+    margin: 18px 0 0;
+    padding: 14px 26px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+  }
+  ul.legend li {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+  .swatch {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .legend .stage-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .legend .stage-label { font-weight: 500; font-size: 14.5px; }
+
+  .stage-notes {
+    padding: 6px 26px 22px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    gap: 14px;
+  }
+  .stage-note {
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 4px 12px;
+    padding-top: 14px;
+  }
+  .stage-note .stage-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  .stage-note h3 {
+    grid-column: 2;
+    margin: 0;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .stage-note p {
+    grid-column: 2;
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--text-dim);
+    max-width: 68ch;
+  }
+
+  table.data {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+  }
+  table.data th, table.data td {
+    text-align: right;
+    padding: 10px 26px;
+    font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data thead th {
+    color: var(--text-faint);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  table.data tbody tr:last-child td { border-bottom: none; }
+  table.data tbody tr:hover { background: var(--surface-2); }
+
+  .table-wrap { overflow-x: auto; padding-bottom: 4px; }
+
+  .caveat {
+    margin: 0;
+    padding: 16px 26px 22px;
+    font-size: 13px;
+    color: var(--text-faint);
+    max-width: 68ch;
+    border-top: 1px solid var(--border);
+  }
+  .caveat code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--surface-2);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  footer {
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--text-faint);
+    font-family: 'IBM Plex Mono', monospace;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+  }
+</style>
+
+<div class="page">
+  <header>
+    <div class="eyebrow">SPH Fluid Simulator &middot; Performance Tracking</div>
+    <h1>Performance</h1>
+    <p class="lede">
+      Frame time of <strong>fluidSim.exe</strong>, swept across particle counts, re-measured after every
+      optimization stage. Each run drives the real interactive frame &mdash; physics step, GPU upload, draw,
+      ImGui, swap &mdash; through <code>--benchmark</code>, so what's plotted is what the app actually delivers
+      to screen, not an isolated solver time.
+    </p>
+    <div class="meta-row" id="metaRow"></div>
+  </header>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Frame time vs. particle count</h2>
+      <div class="axis-note">log&ndash;log &middot; lower is better</div>
+    </div>
+    <div class="chart-wrap">
+      <svg id="chart" viewBox="0 0 920 460" aria-label="Frame time in milliseconds versus particle count, one line per optimization stage"></svg>
+      <div class="tooltip" id="tooltip" hidden></div>
+    </div>
+    <ul class="legend" id="legend"></ul>
+    <div class="stage-notes" id="stageNotes"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2 id="tableTitle">Raw sweep</h2>
+      <div class="axis-note">200 timed frames / count, 30 warm-up</div>
+    </div>
+    <div class="table-wrap">
+      <table class="data" id="dataTable"></table>
+    </div>
+    <p class="caveat" id="caveat"></p>
+  </section>
+
+  <footer id="footer"></footer>
+</div>
+
+<script>
+  // ---- Stage data -------------------------------------------------------
+  // Add a stage here once it's actually been benchmarked (rows: [...]).
+  // Chart, legend, and stage notes below are all generated from this list.
+  const STAGES = [
+    {
+      id: '00_baseline', num: '0', label: 'Baseline', colorHex: '#e2432c',
+      desc: 'Unmodified simulation. Both the density/pressure pass and the force pass are brute-force O(n&sup2;) &mdash; every particle checks every other particle, no spatial partitioning of any kind. This run is the reference point every later stage is measured against.',
+      rows: [
+        { n: 100,  avg: 1.34214,  min: 0.9778,   max: 8.1905,   fps: 745.082 },
+        { n: 250,  avg: 5.27731,  min: 3.574,    max: 9.3827,   fps: 189.49 },
+        { n: 500,  avg: 41.3131,  min: 13.9963,  max: 96.8544,  fps: 24.2054 },
+        { n: 1000, avg: 149.881, min: 64.4466,  max: 358.239,  fps: 6.67195 },
+        { n: 2500, avg: 1032.39, min: 731.854,  max: 1526.06,  fps: 0.968625 },
+      ]
+    },
+  ];
+
+  // ---- Meta row -----------------------------------------------------------
+  const allN = STAGES.flatMap(s => s.rows.map(r => r.n));
+  const last = STAGES[STAGES.length - 1];
+  const lastRow = last.rows[last.rows.length - 1];
+  const metaRow = document.getElementById('metaRow');
+  const metaItems = [
+    ['Particle range', `${Math.min(...allN).toLocaleString()}–${Math.max(...allN).toLocaleString()}`],
+    [`${last.label} @ ${lastRow.n.toLocaleString()}`, `${lastRow.avg.toFixed(0)} ms/frame (${lastRow.fps.toFixed(2)} fps)`],
+  ];
+  metaItems.forEach(([k, v]) => {
+    const elm = document.createElement('div');
+    elm.className = 'meta-chip';
+    elm.innerHTML = `${k} <b>${v}</b>`;
+    metaRow.appendChild(elm);
+  });
+
+  // ---- Scales ---------------------------------------------------------
+  const M = { l: 64, r: 24, t: 16, b: 44 };
+  const W = 920, H = 460;
+  const plotW = W - M.l - M.r, plotH = H - M.t - M.b;
+
+  const allRows = STAGES.flatMap(s => s.rows);
+  const xMin = Math.min(...allRows.map(r => r.n)) * 0.75;
+  const xMax = Math.max(...allRows.map(r => r.n)) * 1.5;
+  const yMin = Math.min(...allRows.map(r => r.min)) * 0.7;
+  const yMax = Math.max(...allRows.map(r => r.max)) * 1.35;
+
+  const lx = v => Math.log10(v);
+  const xScale = n => M.l + (lx(n) - lx(xMin)) / (lx(xMax) - lx(xMin)) * plotW;
+  const yScale = ms => M.t + plotH - (lx(ms) - lx(yMin)) / (lx(yMax) - lx(yMin)) * plotH;
+
+  function logTicks(min, max) {
+    const ticks = [];
+    const startExp = Math.floor(Math.log10(min));
+    const endExp = Math.ceil(Math.log10(max));
+    for (let e = startExp; e <= endExp; e++) {
+      for (const m of [1, 2, 5]) {
+        const v = m * Math.pow(10, e);
+        if (v >= min && v <= max) ticks.push(v);
+      }
+    }
+    return ticks;
+  }
+
+  function fmtN(v) {
+    return v >= 1000 ? (v / 1000).toLocaleString() + 'k' : v.toLocaleString();
+  }
+  function fmtMs(v) {
+    if (v >= 100) return v.toFixed(0);
+    if (v >= 10) return v.toFixed(1);
+    return v.toFixed(2);
+  }
+  function fmtFps(v) {
+    return v >= 10 ? v.toFixed(1) : v.toFixed(2);
+  }
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs) {
+    const e = document.createElementNS(svgNS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  const svg = document.getElementById('chart');
+  const yTickVals = logTicks(yMin, yMax);
+  const yTickMax = Math.max(...yTickVals);
+
+  // Gridlines + axis labels
+  logTicks(xMin, xMax).forEach(v => {
+    const x = xScale(v);
+    svg.appendChild(el('line', { class: 'grid-line', x1: x, x2: x, y1: M.t, y2: M.t + plotH }));
+    const t = el('text', { x, y: M.t + plotH + 20, 'text-anchor': 'middle', 'font-size': 11 });
+    t.textContent = fmtN(v);
+    svg.appendChild(t);
+  });
+  yTickVals.forEach(v => {
+    const y = yScale(v);
+    svg.appendChild(el('line', { class: 'grid-line', x1: M.l, x2: M.l + plotW, y1: y, y2: y }));
+    const t = el('text', { x: M.l - 10, y: y + 4, 'text-anchor': 'end', 'font-size': 11 });
+    t.textContent = fmtMs(v) + (v === yTickMax ? ' ms' : '');
+    svg.appendChild(t);
+  });
+  svg.appendChild(el('line', { class: 'axis-line', x1: M.l, x2: M.l, y1: M.t, y2: M.t + plotH }));
+  svg.appendChild(el('line', { class: 'axis-line', x1: M.l, x2: M.l + plotW, y1: M.t + plotH, y2: M.t + plotH }));
+
+  const xLabel = el('text', { x: M.l + plotW / 2, y: H - 4, 'text-anchor': 'middle', 'font-size': 11.5, 'letter-spacing': '0.04em' });
+  xLabel.textContent = 'PARTICLE COUNT';
+  svg.appendChild(xLabel);
+
+  const tooltip = document.getElementById('tooltip');
+
+  // Series
+  STAGES.forEach(stage => {
+    const pathD = stage.rows.map((r, i) => `${i === 0 ? 'M' : 'L'} ${xScale(r.n)} ${yScale(r.avg)}`).join(' ');
+    svg.appendChild(el('path', { class: 'series-path', d: pathD, stroke: stage.colorHex }));
+
+    stage.rows.forEach(r => {
+      const x = xScale(r.n);
+      svg.appendChild(el('line', {
+        class: 'range-line', x1: x, x2: x, y1: yScale(r.min), y2: yScale(r.max), stroke: stage.colorHex
+      }));
+      const c = el('circle', { class: 'pt', cx: x, cy: yScale(r.avg), r: 5, fill: stage.colorHex, tabindex: 0 });
+      const show = () => {
+        tooltip.hidden = false;
+        tooltip.innerHTML = `
+          <div class="tt-stage" style="color:${stage.colorHex}">${stage.label}</div>
+          <div class="tt-row"><span>particles</span><b>${r.n.toLocaleString()}</b></div>
+          <div class="tt-row"><span>avg frame</span><b>${fmtMs(r.avg)} ms</b></div>
+          <div class="tt-row"><span>range</span><b>${fmtMs(r.min)}&ndash;${fmtMs(r.max)}</b></div>
+          <div class="tt-row"><span>fps</span><b>${fmtFps(r.fps)}</b></div>`;
+        const wrapRect = svg.parentElement.getBoundingClientRect();
+        const svgRect = svg.getBoundingClientRect();
+        const px = svgRect.left - wrapRect.left + (x / W) * svgRect.width;
+        const py = svgRect.top - wrapRect.top + (yScale(r.avg) / H) * svgRect.height;
+        tooltip.style.left = Math.min(px + 14, wrapRect.width - 180) + 'px';
+        tooltip.style.top = Math.max(py - 54, 0) + 'px';
+      };
+      c.addEventListener('mouseenter', show);
+      c.addEventListener('focus', show);
+      c.addEventListener('mouseleave', () => tooltip.hidden = true);
+      c.addEventListener('blur', () => tooltip.hidden = true);
+      svg.appendChild(c);
+    });
+  });
+
+  // ---- Legend -----------------------------------------------------------
+  const legend = document.getElementById('legend');
+  STAGES.forEach(s => {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <span class="swatch" style="background:${s.colorHex}"></span>
+      <span class="stage-num">${s.num}</span>
+      <span class="stage-label">${s.label}</span>
+    `;
+    legend.appendChild(li);
+  });
+
+  // ---- Stage notes --------------------------------------------------------
+  const stageNotes = document.getElementById('stageNotes');
+  STAGES.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'stage-note';
+    div.innerHTML = `
+      <span class="stage-num" style="color:${s.colorHex}">${s.num}</span>
+      <h3>${s.label}</h3>
+      <p>${s.desc}</p>
+    `;
+    stageNotes.appendChild(div);
+  });
+
+  // ---- Data table (most recently completed stage) ------------------------
+  document.getElementById('tableTitle').textContent = `Stage ${last.num} · ${last.label} — raw sweep`;
+  const table = document.getElementById('dataTable');
+  table.innerHTML = `
+    <thead><tr><th>Particles</th><th>Avg (ms)</th><th>Min (ms)</th><th>Max (ms)</th><th>FPS</th></tr></thead>
+    <tbody>${last.rows.map(r => `
+      <tr>
+        <td>${r.n.toLocaleString()}</td>
+        <td>${fmtMs(r.avg)}</td>
+        <td>${fmtMs(r.min)}</td>
+        <td>${fmtMs(r.max)}</td>
+        <td>${fmtFps(r.fps)}</td>
+      </tr>`).join('')}
+    </tbody>`;
+
+  document.getElementById('caveat').innerHTML = `
+    Sweep capped at 2,500 particles for this stage. The solver is brute-force O(n&sup2;): frame time already
+    grew ~770&times; over a 25&times; increase in particle count, so 5,000&ndash;20,000 would each take minutes
+    to hours to sit through untouched. That range returns once the spatial grid stage lands.
+  `;
+
+  // ---- Footer -----------------------------------------------------------
+  document.getElementById('footer').innerHTML = `
+    <span>fluidSim.exe --benchmark &lt;stage&gt;</span>
+    <span>&middot;</span>
+    <span>30 warm-up + 200 timed frames / count</span>
+    <span>&middot;</span>
+    <span>vsync off</span>
+    <span>&middot;</span>
+    <span>MSVC / Windows 11</span>
+  `;
+</script>

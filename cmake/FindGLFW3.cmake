@@ -18,12 +18,12 @@ set( _glfw3_HEADER_SEARCH_DIRS
 "/usr/include"
 "/usr/local/include"
 "${CMAKE_SOURCE_DIR}/includes"
-"C:/Users/ryanf/Projects/FluidSim/external/glfw/include" )
+"C:/Users/chris/Projects/FluidSim/external/glfw/include" )
 set( _glfw3_LIB_SEARCH_DIRS
 "/usr/lib"
 "/usr/local/lib"
 "${CMAKE_SOURCE_DIR}/lib"
-"C:/Users/ryanf/Projects/FluidSim/external/glfw/lib-mingw-w64" )
+"C:/Users/chris/Projects/FluidSim/external/glfw/lib-mingw-w64" )
 
 # Check environment for root search directory
 set( _glfw3_ENV_ROOT $ENV{GLFW3_ROOT} )
